@@ -4,8 +4,8 @@ class AuthenticationTest < MiniTest::Unit::TestCase
   include Cloud::Agent::Authentication
 
   def setup
-    stub_request(:get, 'https://api.cloud.com/deploys/1').to_return(:body => 'something')
-    @request = authenticated_request('https://api.cloud.com/deploys/1')
+    stub_request(:get, 'https://api.cloud.com/v1/deploys/1').to_return(:status => 200, :body => 'response')
+    @request = authenticated_request(:get, '/deploys/1')
   end
   
   def test_auth_token_is_sent_in_header

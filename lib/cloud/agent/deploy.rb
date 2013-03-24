@@ -39,11 +39,11 @@ class Cloud::Agent::Deploy
   end
 
   def request_payload!
-    url = "https://api.cloud.com/v1/deploys/#{@deploy_token}"
-    @response = JSON.parse authenticated_request(url)
-    Cloud::Agent.logger.info(['deploy_response', url, response])
+    path = "/deploys/#{@deploy_token}"
+    @response = JSON.parse authenticated_request(:get, path)
+    Cloud::Agent.logger.info(['deploy_response', path, response])
   rescue => e
-    Cloud::Agent::Exception.notify('request_payload_invalid_response', e)
+    Cloud::Agent::Error.notify('request_payload_invalid_response', e)
   end
 
   def download_deployment_archive!
@@ -55,7 +55,7 @@ class Cloud::Agent::Deploy
     end
   rescue => e
     File.delete(archive_download_path)
-    Cloud::Agent::Exception.notify('download_deployment_archive_error', e) 
+    Cloud::Agent::Error.notify('download_deployment_archive_error', e) 
   end
 
   def unpackage_deployment_archive!
