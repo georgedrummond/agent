@@ -16,7 +16,7 @@ class DeployTest < MiniTest::Unit::TestCase
     deploy = Cloud::Agent::Deploy.new('abcd')
     deploy.request_payload!
 
-    assert_equal deploy.response, nil
+    assert_equal deploy.appname, nil
   end
 
   def test_requesting_payload_returns_a_200_response

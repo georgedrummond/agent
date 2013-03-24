@@ -4,7 +4,7 @@ require 'zlib'
 class Cloud::Agent::Deploy
   include Cloud::Agent::Authentication
 
-  attr_reader :deploy_token, :response, :archive_download_path, :release_path
+  attr_reader :deploy_token
 
   def initialize(deploy_token)
     @deploy_token = deploy_token
