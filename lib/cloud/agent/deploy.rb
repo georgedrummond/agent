@@ -10,18 +10,6 @@ class Cloud::Agent::Deploy
     @deploy_token = deploy_token
   end
 
-  def appname
-    @response['appname']
-  end
-
-  def archive_url
-    @response['archive_url']
-  end
-
-  def deployment
-    @response['deployment']
-  end
-
   def archive_download_path
     File.join(ENV['DEPLOYMENT_PATH'], "/tmp/#{deployment}.tar.gz")
   end
@@ -40,7 +28,8 @@ class Cloud::Agent::Deploy
 
   def request_payload!
     path = "/deploys/#{@deploy_token}"
-    @response = JSON.parse authenticated_request(:get, path)
+    response = JSON.parse authenticated_request(:get, path)
+    response.each { |k, v| self.class.send :define_method, k, proc {v} }
     Cloud::Agent.logger.info(['deploy_response', path, response])
   rescue => e
     Cloud::Agent::Error.notify('request_payload_invalid_response', e)
