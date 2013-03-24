@@ -11,10 +11,10 @@ module Cloud::Agent
     end
 
     def send!
-      payload = {
-        :exception => @e.name,
-        :stacktrace => @e.backtrace
-      }
+      payload = {}
+      payload[:exception]  = @e.name if @e.respond_to?(:name)
+      payload[:stacktrace] = @e.backtrace if @e.respond_to?(:backtrace)
+      
       authenticated_request :post, '/exceptions', payload
     end
 
