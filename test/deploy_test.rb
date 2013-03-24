@@ -4,6 +4,7 @@ class DeployTest < MiniTest::Unit::TestCase
   include RR::Adapters::MiniTest
 
   def setup
+    WebMock.reset!
     FileUtils.remove_dir(ENV['DEPLOYMENT_PATH']) rescue nil
     FileUtils.mkdir_p(ENV['DEPLOYMENT_PATH'])
     FileUtils.mkdir_p File.join(ENV['DEPLOYMENT_PATH'], 'tmp')
@@ -11,21 +12,19 @@ class DeployTest < MiniTest::Unit::TestCase
   end
 
   def test_requesting_payload_returns_an_unexpected_error
-    stub_request(:get, 'https://api.cloud.com/v1/deploys/abcd').to_return(:status => [500, 'Internal Error'])
+    stub_request(:get, 'https://api.cloud.com/v1/deploys/invalid').to_return(:status => 500, :body => 'Not Found')
     mock(Cloud::Agent::Error).notify('request_payload_invalid_response', anything).once
-    deploy = Cloud::Agent::Deploy.new('abcd')
+    deploy = Cloud::Agent::Deploy.new('invalid')
     deploy.request_payload!
-
-    assert_equal deploy.appname, nil
   end
 
   def test_requesting_payload_returns_a_200_response
-    deploy_setup
-    @deploy.request_payload!
+    deploy = deploy_setup
+    deploy.request_payload!
 
-    assert_equal @deploy.appname,    'cloud-agent'
-    assert_equal @deploy.deployment, 'cloud-agent-3msd893'
-    assert_equal @deploy.archive_url, archive_url
+    assert_equal deploy.appname,    'cloud-agent'
+    assert_equal deploy.deployment, 'cloud-agent-3msd893'
+    assert_equal deploy.archive_url, archive_url
   end
 
   def test_downloading_archived_deployment_unexpected_error
@@ -40,33 +39,33 @@ class DeployTest < MiniTest::Unit::TestCase
   end
 
   def test_downloading_archived_deployment
-    deploy_setup
-    @deploy.request_payload!
-    @deploy.download_deployment_archive!
+    deploy = deploy_setup
+    deploy.request_payload!
+    deploy.download_deployment_archive!
 
-    assert File.exists? @deploy.archive_download_path
-    assert FileUtils.compare_file dummy_archive_path, @deploy.archive_download_path
+    assert File.exists? deploy.archive_download_path
+    assert FileUtils.compare_file dummy_archive_path, deploy.archive_download_path
   end
 
   def test_unpackaging_downloaded_archive
-    deploy_setup
-    @deploy.request_payload!
-    @deploy.download_deployment_archive!
-    @deploy.unpackage_deployment_archive!
+    deploy = deploy_setup
+    deploy.request_payload!
+    deploy.download_deployment_archive!
+    deploy.unpackage_deployment_archive!
 
-    assert !File.exists?(@deploy.archive_download_path)
-    assert File.directory? @deploy.latest_release_path
-    assert File.exists? File.join(@deploy.latest_release_path, 'Gemfile')
+    assert !File.exists?(deploy.archive_download_path)
+    assert File.directory? deploy.latest_release_path
+    assert File.exists? File.join(deploy.latest_release_path, 'Gemfile')
   end
 
   def test_symlinking_current
-    deploy_setup
-    @deploy.request_payload!
-    @deploy.download_deployment_archive!
-    @deploy.unpackage_deployment_archive!
-    @deploy.symlink_current!
+    deploy = deploy_setup
+    deploy.request_payload!
+    deploy.download_deployment_archive!
+    deploy.unpackage_deployment_archive!
+    deploy.symlink_current!
 
-    assert File.symlink?(@deploy.current_release_path)
+    assert File.symlink?(deploy.current_release_path)
   end
 
 private
@@ -82,7 +81,7 @@ private
   def deploy_setup
     stubbed_deploy_response
     stub_request(:get, @archive_url).to_return(:status => 200, :body => dummy_archive)
-    @deploy = Cloud::Agent::Deploy.new('abcd')
+    Cloud::Agent::Deploy.new('abcd')
   end
 
   def stubbed_deploy_response
