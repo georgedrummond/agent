@@ -6,9 +6,10 @@ class DeployTest < MiniTest::Unit::TestCase
   def setup
     WebMock.reset!
     FileUtils.remove_dir(ENV['DEPLOYMENT_PATH']) rescue nil
-    FileUtils.mkdir_p(ENV['DEPLOYMENT_PATH'])
-    FileUtils.mkdir_p File.join(ENV['DEPLOYMENT_PATH'], 'tmp')
-    FileUtils.mkdir_p File.join(ENV['DEPLOYMENT_PATH'], 'releases')
+    app_path = File.join(ENV['DEPLOYMENT_PATH'], 'cloud-agent')
+    FileUtils.mkdir_p File.join(app_path)
+    FileUtils.mkdir_p File.join(app_path, 'tmp')
+    FileUtils.mkdir_p File.join(app_path, 'releases')
   end
 
   def test_requesting_payload_returns_an_unexpected_error

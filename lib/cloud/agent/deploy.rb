@@ -10,12 +10,16 @@ class Cloud::Agent::Deploy
     @deploy_token = deploy_token
   end
 
+  def app_path
+    File.join(ENV['DEPLOYMENT_PATH'], appname)
+  end
+
   def archive_download_path
-    File.join(ENV['DEPLOYMENT_PATH'], "/tmp/#{deployment}.tar.gz")
+    File.join(app_path, "/tmp/#{deployment}.tar.gz")
   end
 
   def releases_path
-    File.join(ENV['DEPLOYMENT_PATH'], 'releases')
+    File.join(app_path, 'releases')
   end
 
   def latest_release_path
@@ -23,7 +27,7 @@ class Cloud::Agent::Deploy
   end
 
   def current_release_path
-    File.join(ENV['DEPLOYMENT_PATH'], 'current')
+    File.join(app_path, 'current')
   end
 
   def request_payload!
